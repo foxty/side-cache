@@ -1,14 +1,15 @@
 {
   "name": "jcacheable",
   "version": "0.0.1",
-  "description": "Eanble cache for Javascript callable! Support Browser and Node env.",
-  "main": "dist/cacheable.js",
+  "description": "Cache wrapper for Javascript fucntions! Support Browser and Node.",
+  "main": "dist/jcacheable.js",
   "type": "module",
   "scripts": {
     "test": "jest",
     "test-report": "jest --coverage",
+    "prebuild": "rm -rf ./dist",
     "build": "tsc",
-    "prepublish": "rm -rf ./dist && npm run build"
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",

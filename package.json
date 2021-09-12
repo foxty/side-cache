@@ -1,8 +1,8 @@
 {
-  "name": "jcacheable",
+  "name": "side-cache",
   "version": "0.0.1",
   "description": "Cache wrapper for Javascript fucntions! Support Browser and Node.",
-  "main": "dist/jcacheable.js",
+  "main": "dist/index.js",
   "type": "module",
   "scripts": {
     "test": "jest",
@@ -15,7 +15,7 @@
     "type": "git",
     "url": "git+https://github.com/foxty/cacheable.git"
   },
-  "keywords": [],
+  "keywords": ["side cache", "cache proxy"],
   "author": "foxty",
   "license": "Apache License 2.0",
   "bugs": {

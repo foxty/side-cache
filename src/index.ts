@@ -23,11 +23,11 @@ const DEFAULT_GLOBAL_OPTS: GlobalCacheOptions = {
 
 }
 let GLOBAL_CACHE_OPTS: GlobalCacheOptions = DEFAULT_GLOBAL_OPTS
-export const configure = (options: GlobalCacheOptions = DEFAULT_GLOBAL_OPTS) => {
+const configure = (options: GlobalCacheOptions = DEFAULT_GLOBAL_OPTS) => {
     GLOBAL_CACHE_OPTS = Object.assign({}, DEFAULT_GLOBAL_OPTS, options)
 }
 
-export const cacheable = (target: Function, cacheKeyBuilder: Function = () => target.name, options: CacheOptions = {}) => {
+const cacheable = (target: Function, cacheKeyBuilder: Function = () => target.name, options: CacheOptions = {}) => {
 
     const getCacheOptions = () => {
         return Object.assign({}, GLOBAL_CACHE_OPTS, options)
@@ -77,4 +77,4 @@ export const cacheable = (target: Function, cacheKeyBuilder: Function = () => ta
     })
 }
 
-export { LocalStorageCacheStore, LocalMemCacheStore }
+export { configure, cacheable, LocalStorageCacheStore, LocalMemCacheStore }

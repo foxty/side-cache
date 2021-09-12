@@ -1,9 +1,10 @@
 {
     "compilerOptions": {
-        "outFile": "./dist/jcacheable.js",
+        "outDir": "./dist",
+        //"outFile": "./dist/all.js",
         "sourceMap": true,
         "noImplicitAny": false,
-        "module": "amd",
+        "module": "CommonJS",
         "target": "es5",
         "allowJs": true,
         "esModuleInterop": true,

@@ -1,31 +1,26 @@
 # cacheable
-Enable cache for Javascript function calls. Basically, you can enable cache for any function call and cache the returned data in LocalStorage, Memory (Will support Redis, Mysql soon).
+A simple cache wrapper for functions. Just 1 line of code to cache your function outputs.
+
+**Highglights**
+- Wrapper for function (support sync/async)
+- Cache TTL
+- Cache signature validation
+- Less pollution in your code
+- Support Array/Set/Map
+- Support LocalStorage or Memory as cache store.
 
 
 ## Install
+```bash
+npm i side-cache
+```
 
-```
-npm i jcacheable
-```
 
 ## Usage
 
-**Global Config**
-```
-import { configure } from 'jcacheable';
-
-configure({
-    keyPrefix: "cacheable",
-    enableSignature: true,
-    timeToLive: 3600 * 24 // Default ttl is 1 day (seconds)
-    //cacheStore: new LocalStorageCacheStore() - Default use localStorange as storage.
-})
-
-```
-
-**Cache Function Result**
-```
-import { cacheable } from 'jcacheable';
+**One Line for Cache**
+```javascript
+import { cacheable } from 'side-cache';
 
 const getUser = async (userId) => {
     const resp = await feth('https://gorest.co.in/public/v1/users?id=' + userId);
@@ -37,9 +32,10 @@ const userInfo = getCacheableUser(1)
 console.log(userInfo)
 ```
 
-**Customize Options**
-```
-import { cacheable } from 'jcacheable';
+
+**Cache Options**
+```javascript
+import { cacheable } from 'side-cache';
 
 const getUser = async (userId) => {
     const resp = await feth('https://gorest.co.in/public/v1/users?id=' + userId);
@@ -55,5 +51,40 @@ const getCacheableUser = cacheable(
 const userInfo = getCacheableUser(1)
 console.log(userInfo)
 ```
+
+**Global Config**
+```javascript
+import { configure } from 'side-cache';
+
+configure({
+    keyPrefix: "cacheable",
+    enableSignature: true,
+    timeToLive: 3600 * 24 // Default ttl is 1 day (seconds)
+    //cacheStore: new LocalStorageCacheStore() - Default use localStorange as storage.
+})
+
+```
+
+## API
+**cacheable**
+```javascript
+declare const cacheable: (target: Function, cacheKeyBuilder?: Function, options?: CacheOptions) => any;
+
+interface CacheOptions {
+    keyPrefix?: string;
+    enableSignature?: boolean;
+    timeToLive?: number;
+}
+```
+**configure**
+```javascript
+declare const configure: (options?: GlobalCacheOptions) => void;
+
+interface GlobalCacheOptions extends CacheOptions {
+    cacheStore?: CacheStore;
+    serializer?: Serializer<any>;
+}
+```
+
 
 ## Q&A

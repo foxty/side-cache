@@ -1,6 +1,6 @@
 {
   "name": "jcacheable",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Eanble cache for Javascript callable! Support Browser and Node env.",
   "main": "dist/cacheable.js",
   "type": "module",

@@ -1,5 +1,5 @@
 # cacheable
-A simple cache wrapper for functions. Just 1 line of code to cache your function result.
+A simple cache wrapper for functions. Just 1 line of code to cache any function result.
 
 **Highglights**
 - Wrapper for function (support sync/async)

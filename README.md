@@ -23,7 +23,7 @@ npm i side-cache
 import { cacheable } from 'side-cache';
 
 const getUser = async (userId) => {
-    const resp = await feth('https://gorest.co.in/public/v1/users?id=' + userId);
+    const resp = await fecth('https://gorest.co.in/public/v1/users?id=' + userId);
     return await resp.json()
 }
 const getCacheableUser = cacheable(getUser, (userId)=> `user.${userId}`)
@@ -38,7 +38,7 @@ console.log(userInfo)
 import { cacheable } from 'side-cache';
 
 const getUser = async (userId) => {
-    const resp = await feth('https://gorest.co.in/public/v1/users?id=' + userId);
+    const resp = await fetch('https://gorest.co.in/public/v1/users?id=' + userId);
     return await resp.json()
 }
 //Cache will expired after 1 hour

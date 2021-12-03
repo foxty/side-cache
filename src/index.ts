@@ -2,6 +2,8 @@ import { CacheEntry, createProcessors, SignatureProcessor } from "./processor"
 import { DefaultSerializer, Serializer } from "./serializer"
 import { CacheStore, LocalStorageCacheStore, LocalMemCacheStore } from "./store"
 
+const IS_IN_BROWSER = typeof window === 'object'
+
 interface CacheOptions {
     keyPrefix?: string,
     enableSignature?: boolean,
@@ -18,7 +20,7 @@ const DEFAULT_GLOBAL_OPTS: GlobalCacheOptions = {
     keyPrefix: 'cacheable',
     enableSignature: false,
     timeToLive: -1,
-    cacheStore: new LocalStorageCacheStore(),
+    cacheStore: IS_IN_BROWSER ? new LocalStorageCacheStore() : new LocalMemCacheStore(),
     serializer: new DefaultSerializer(),
 
 }
@@ -27,7 +29,11 @@ const configure = (options: GlobalCacheOptions = DEFAULT_GLOBAL_OPTS) => {
     GLOBAL_CACHE_OPTS = Object.assign({}, DEFAULT_GLOBAL_OPTS, options)
 }
 
-const cacheable = (target: Function, cacheKeyBuilder: Function = () => target.name, options: CacheOptions = {}) => {
+const cacheable = <T>(
+    target: Function,
+    cacheKeyBuilder: Function = () => target.name,
+    options: CacheOptions = {}
+) => {
 
     const getCacheOptions = () => {
         return Object.assign({}, GLOBAL_CACHE_OPTS, options)
@@ -58,7 +64,7 @@ const cacheable = (target: Function, cacheKeyBuilder: Function = () => target.na
     }
 
     return new Proxy(target, {
-        apply(target: any, thisArg: any, argArray: Array<any>) {
+        apply(target: any, thisArg: any, argArray: Array<any>): T | Promise<T> {
             const { keyPrefix } = getCacheOptions()
             const cacheKey = keyPrefix + '.' + cacheKeyBuilder.apply(null, argArray)
             let cachedData = getCache(cacheKey)

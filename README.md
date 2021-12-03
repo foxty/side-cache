@@ -60,7 +60,8 @@ configure({
     keyPrefix: "cacheable",
     enableSignature: true,
     timeToLive: 3600 * 24 // Default ttl is 1 day (seconds)
-    //cacheStore: new LocalStorageCacheStore() - Default use localStorange as storage.
+    //cacheStore: new LocalStorageCacheStore() - Defautl store in browser.
+    //cacheStore: new LocalMemCacheStore() - Default store in Node.
 })
 
 ```
@@ -86,5 +87,8 @@ interface GlobalCacheOptions extends CacheOptions {
 }
 ```
 
-
 ## Q&A
+- What kind of storage policy support?
+  > Currently we only support LocalStorage(in broswer) and LocalMemory(in node), it been selected automatically while runing application.
+
+- Please raise you questions in issues!

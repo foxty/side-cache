@@ -1,4 +1,4 @@
-import { cacheable, configure } from "../src/cacheable"
+import { cacheable, configure } from "../src/index"
 import { CacheEntry, createProcessors, BaseCachePocessor } from "../src/processor"
 import { LocalMemCacheStore, LocalStorageCacheStore } from "../src/store";
 
@@ -41,10 +41,10 @@ afterEach(() => {
 })
 
 describe('Test cacheable', () => {
-    const getConfigs = () => {
+    const getConfigs = (): { [key: string]: string } => {
         return { Config: 'config' }
     }
-    const getCacheableConfigs = cacheable(getConfigs, () => 'configs')
+    const getCacheableConfigs = cacheable<string>(getConfigs, () => 'configs')
     const expectedStringInCache = JSON.stringify(getConfigs())
 
     test('Cacheable should be created', () => {
@@ -124,7 +124,7 @@ describe('Test configuration', () => {
         const cachedCall = cacheable(() => '123', () => { 'test' })
         const value = cachedCall()
         expect(mockedCreateProcessors).toBeCalledTimes(2)
-        expect(mockedCreateProcessors).toBeCalledWith(false, -1, new LocalStorageCacheStore())
+        expect(mockedCreateProcessors).toBeCalledWith(false, -1, new LocalMemCacheStore())
     })
 
     test('Override global config', () => {

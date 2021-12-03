@@ -1,0 +1,19 @@
+<html>
+<head>
+    <title>Test side-cache in browser side!</title>
+    <script type="module">
+        import { cacheable } from "../src";
+        const getCacheableUsers = cacheable(
+            () => {
+                return ['user1', 'user2']
+            },
+            () => {return 'test.users'}
+        )
+        const users = getCacheableUsers()
+        console.log(`Get users and it should be cahced in localStorage`, users)
+    </script>
+</head>
+<body>
+    <h1>Users data should be writtedn to localStorage, please open console to check.</h1>
+</body>
+</html

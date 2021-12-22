@@ -117,6 +117,32 @@ describe('Test cacheable', () => {
         expect(result).toEqual({ name: 'foxty' })
         expect(mockedProcessor.set).toBeCalledWith({ key: 'cacheable.async-cacheable', value: JSON.stringify({ name: 'foxty' }) })
     })
+
+    test('Error tolerance while get', async () => {
+        mockedProcessor.get = jest.fn(() => {
+            throw new Error('bla');
+        })
+
+        const cachedFunc = cacheable(() => {
+            return { name: 'foxty' }
+        }, () => 'error')
+        const result = cachedFunc()
+        expect(result).toEqual({ name: 'foxty' })
+        expect(mockedProcessor.set).toBeCalledWith({ key: 'cacheable.error', value: JSON.stringify({ name: 'foxty' }) })
+    })
+
+    test('Error tolerance while set', async () => {
+        mockedProcessor.set = jest.fn(() => {
+            throw new Error('bla');
+        })
+
+        const cachedFunc = cacheable(() => {
+            return { name: 'foxty' }
+        }, () => 'error')
+        const result = cachedFunc()
+        expect(result).toEqual({ name: 'foxty' })
+        expect(mockedProcessor.set).toBeCalledWith({ key: 'cacheable.error', value: JSON.stringify({ name: 'foxty' }) })
+    })
 })
 
 describe('Test configuration', () => {

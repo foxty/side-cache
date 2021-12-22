@@ -60,7 +60,11 @@ const cacheable = <T>(
             key: cacheKey,
             value: serializedCacheValue
         }
-        processors.set(cacheEntry)
+        try {
+            processors.set(cacheEntry)
+        } catch (e) {
+            console.warn(`Error while set cache for key ${cacheKey}`)
+        }
     }
 
     return new Proxy(target, {

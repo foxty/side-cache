@@ -6,11 +6,11 @@
   "type": "module",
   "scripts": {
     "test": "jest --silent",
-    "test-report": "jest --coverage",
+    "test-report": "jest --silent --coverage",
     "test-browser": "parcel test/browser.test.html --dist-dir tmp",
     "prebuild": "rm -rf ./dist",
     "build": "tsc",
-    "prepublish": "npm run build"
+    "prepublish": "npm run test && npm run build"
   },
   "repository": {
     "type": "git",

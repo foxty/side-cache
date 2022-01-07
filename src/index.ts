@@ -5,7 +5,7 @@ import { CacheStore, LocalStorageCacheStore, LocalMemCacheStore } from "./store"
 const IS_IN_BROWSER = typeof window === 'object'
 
 interface CacheOptions {
-    keyPrefix?: string,
+    keyPrefix?: string | Function,
     enableSignature?: boolean,
     timeToLive?: number,
     //allowStaledValue?: boolean,
@@ -25,13 +25,17 @@ const DEFAULT_GLOBAL_OPTS: GlobalCacheOptions = {
 
 }
 let GLOBAL_CACHE_OPTS: GlobalCacheOptions = DEFAULT_GLOBAL_OPTS
-const configure = (options: GlobalCacheOptions = DEFAULT_GLOBAL_OPTS) => {
+const configure = async (options: GlobalCacheOptions = DEFAULT_GLOBAL_OPTS) => {
+    if (typeof options.keyPrefix === 'function') {
+        const response = options.keyPrefix.call(options)
+        options.keyPrefix = response instanceof Promise ? await response : response
+    }
     GLOBAL_CACHE_OPTS = Object.assign({}, DEFAULT_GLOBAL_OPTS, options)
 }
 
 const cacheable = <T>(
     target: Function,
-    cacheKeyBuilder: Function = () => target.name,
+    cacheKeyBuilder: string | Function,
     options: CacheOptions = {}
 ) => {
 
@@ -70,7 +74,8 @@ const cacheable = <T>(
     return new Proxy(target, {
         apply(target: any, thisArg: any, argArray: Array<any>): T | Promise<T> {
             const { keyPrefix } = getCacheOptions()
-            const cacheKey = keyPrefix + '.' + cacheKeyBuilder.apply(null, argArray)
+            const keySuffix = typeof cacheKeyBuilder === 'function' ? cacheKeyBuilder.apply(thisArg, argArray) : cacheKeyBuilder
+            const cacheKey = keyPrefix + '.' + keySuffix
             let cachedData = getCache(cacheKey)
             if (cachedData) return cachedData
 

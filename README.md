@@ -1,20 +1,19 @@
 # cacheable
-A simple cache wrapper for functions. Just 1 line of code to cache any function result.
+A simple cache wrapper for functions. Only need 1 line of code to cache the function result.
 
 **Highglights**
-- Wrapper for function (support sync/async)
+- Simple wrapper for function (support async)
 - Cache TTL
 - Cache signature validation
 - Less pollution in your code
-- Support Array/Set/Map
-- Support LocalStorage or Memory as cache store.
+- Support Array/Set/Map in returned type
+- Support LocalStorage or Memory as cache store
 
 
 ## Install
 ```bash
 npm i side-cache
 ```
-
 
 ## Usage
 
@@ -44,7 +43,7 @@ const getUser = async (userId) => {
 //Cache will expired after 1 hour
 const getCacheableUser = cacheable(
         getUser, 
-        (userId)=> `user.${userId}`, 
+        (userId) => `user.${userId}`, 
         {timeToLive: 3600}
     )
 
@@ -69,10 +68,14 @@ configure({
 ## API
 **cacheable**
 ```javascript
-declare const cacheable: (target: Function, cacheKeyBuilder?: Function, options?: CacheOptions) => any;
+declare const cacheable: (
+    target: Function,                       // support sync/async function
+    cacheKeyBuilder: string | Function,     // only support sync function
+    options?: CacheOptions
+) => any;
 
 interface CacheOptions {
-    keyPrefix?: string;
+    keyPrefix?: string | Function;          // Support sync/async function
     enableSignature?: boolean;
     timeToLive?: number;
 }

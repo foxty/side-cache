@@ -1,6 +1,6 @@
 import { cacheable, configure } from "../src/index"
 import { CacheEntry, createProcessors, BaseCachePocessor } from "../src/processor"
-import { LocalMemCacheStore, LocalStorageCacheStore } from "../src/store";
+import { LocalMemCacheStore } from "../src/store";
 
 jest.mock("../src/processor", () => {
     const originalModule = jest.requireActual("../src/processor");
@@ -47,8 +47,24 @@ describe('Test cacheable', () => {
     const getCacheableConfigs = cacheable<string>(getConfigs, () => 'configs')
     const expectedStringInCache = JSON.stringify(getConfigs())
 
-    test('Cacheable should be created', () => {
-        expect(typeof getCacheableConfigs).toBe(typeof getConfigs)
+    test('cacheKeyBuilder is string', () => {
+        const cachedCall = cacheable(() => '123', 'key123')
+        expect(cachedCall()).toBe('123')
+        expect(mockedProcessor.get).toBeCalledWith('cacheable.key123')
+        expect(mockedProcessor.set).toBeCalledWith({
+            key: 'cacheable.key123',
+            value: '\"123\"'
+        })
+    })
+
+    test('cacheKeyBuilder is function', () => {
+        const cachedCall = cacheable(() => '123', () => 'key123')
+        expect(cachedCall()).toBe('123')
+        expect(mockedProcessor.get).toBeCalledWith('cacheable.key123')
+        expect(mockedProcessor.set).toBeCalledWith({
+            key: 'cacheable.key123',
+            value: '\"123\"'
+        })
     })
 
     test('Get should be get with correct result', () => {
@@ -163,5 +179,46 @@ describe('Test configuration', () => {
         const value = cachedCall()
         expect(mockedCreateProcessors).toBeCalledTimes(2)
         expect(mockedCreateProcessors).toBeCalledWith(true, 168, new LocalMemCacheStore())
+    })
+
+    test('Global keyPrefix by string', async () => {
+        await configure({
+            keyPrefix: 'global-prefix-in-string'
+        })
+        const cachedCall = cacheable(() => '123', () => '123key')
+        expect(cachedCall()).toBe('123')
+        expect(mockedProcessor.get).toBeCalledWith('global-prefix-in-string.123key')
+        expect(mockedProcessor.set).toBeCalledWith({
+            key: 'global-prefix-in-string.123key',
+            value: '\"123\"'
+        })
+    })
+
+    test('Global keyPrefix by sync function', () => {
+        configure({
+            timeToLive: 100,
+            keyPrefix: function () { return 'global-prefix-in-func-' + this.timeToLive }
+        })
+        const cachedCall = cacheable(() => '123', () => '123key')
+        expect(cachedCall()).toBe('123')
+        expect(mockedProcessor.get).toBeCalledWith('global-prefix-in-func-100.123key')
+        expect(mockedProcessor.set).toBeCalledWith({
+            key: 'global-prefix-in-func-100.123key',
+            value: '\"123\"'
+        })
+    })
+
+    test('Global keyPrefix by async function', async () => {
+        await configure({
+            timeToLive: 100,
+            keyPrefix: function () { return Promise.resolve('global-prefix-in-func-' + this.timeToLive) }
+        })
+        const cachedCall = cacheable(() => '123', () => '123key')
+        expect(cachedCall()).toBe('123')
+        expect(mockedProcessor.get).toBeCalledWith('global-prefix-in-func-100.123key')
+        expect(mockedProcessor.set).toBeCalledWith({
+            key: 'global-prefix-in-func-100.123key',
+            value: '\"123\"'
+        })
     })
 })

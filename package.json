@@ -1,6 +1,6 @@
 {
   "name": "side-cache",
-  "version": "0.0.5-rc1",
+  "version": "0.0.5-rc2",
   "description": "Cache wrapper for Javascript fucntions! Support both Browser & Node.",
   "main": "dist/index.js",
   "type": "module",
@@ -9,8 +9,8 @@
     "test-report": "jest --silent --coverage",
     "test-browser": "parcel test/browser.test.html --dist-dir tmp",
     "prebuild": "rm -rf ./dist",
-    "build": "tsc",
-    "prepublish": "npm run test && npm run build"
+    "build": "npm run test-report && tsc",
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",

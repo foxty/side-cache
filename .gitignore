@@ -2,3 +2,5 @@ node_modules
 coverage
 tmp
 .parcel-cache
+dist
+.DS_Store

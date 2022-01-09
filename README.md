@@ -4,7 +4,7 @@ A simple cache wrapper for functions. Only need 1 line of code to cache the func
 **Highglights**
 - Simple wrapper for function (support async)
 - Cache TTL
-- Cache signature validation
+- Cache signature validation (Optional)
 - Less pollution in your code
 - Support Array/Set/Map in returned type
 - Support LocalStorage or Memory as cache store
@@ -57,7 +57,7 @@ import { configure } from 'side-cache';
 
 configure({
     keyPrefix: "cacheable",
-    enableSignature: true,
+    signer: (data:string) => createHash('sha256').update(data).digest('hex'), //Default is null
     timeToLive: 3600 * 24 // Default ttl is 1 day (seconds)
     //cacheStore: new LocalStorageCacheStore() - Defautl store in browser.
     //cacheStore: new LocalMemCacheStore() - Default store in Node.
@@ -76,7 +76,7 @@ declare const cacheable: (
 
 interface CacheOptions {
     keyPrefix?: string | Function;          // Support sync/async function
-    enableSignature?: boolean;
+    signer?: (data:string) => string;       // Function use to do signature validation
     timeToLive?: number;
 }
 ```
@@ -92,6 +92,9 @@ interface GlobalCacheOptions extends CacheOptions {
 
 ## Q&A
 - What kind of storage policy support?
-  > Currently we only support LocalStorage(in broswer) and LocalMemory(in node), it been selected automatically while runing application.
+  > Currently we only support LocalStorage(in broswer) and LocalMemory(in node), it been selected automatically while launch your application.
 
-- Please raise you questions in issues!
+- Does Browser application supported? 
+  > Yes.
+
+- Please raise you questions in [issues](https://github.com/foxty/side-cache/issues)!

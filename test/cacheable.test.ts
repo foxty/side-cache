@@ -166,7 +166,7 @@ describe('Test configuration', () => {
         const cachedCall = cacheable(() => '123', () => { 'test' })
         const value = cachedCall()
         expect(mockedCreateProcessors).toBeCalledTimes(2)
-        expect(mockedCreateProcessors).toBeCalledWith(false, -1, new LocalMemCacheStore())
+        expect(mockedCreateProcessors).toBeCalledWith(null, -1, new LocalMemCacheStore())
     })
 
     test('Override global config', () => {
@@ -178,7 +178,7 @@ describe('Test configuration', () => {
         const cachedCall = cacheable(() => '123', () => { 'test' })
         const value = cachedCall()
         expect(mockedCreateProcessors).toBeCalledTimes(2)
-        expect(mockedCreateProcessors).toBeCalledWith(true, 168, new LocalMemCacheStore())
+        expect(mockedCreateProcessors).toBeCalledWith(null, 168, new LocalMemCacheStore())
     })
 
     test('Global keyPrefix by string', async () => {

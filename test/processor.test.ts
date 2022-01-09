@@ -9,7 +9,7 @@ const CACHE_VALUE = JSON.stringify({ username: 'isaac', password: '123456', addr
 const CACHE_ENTRY: CacheEntry = {
     key: 'test',
     value: CACHE_VALUE,
-    metadata: { }
+    metadata: {}
 }
 const CACHE_ENTRY_NULL_META: CacheEntry = {
     key: 'test',
@@ -25,7 +25,7 @@ const EXP_CACHED_ENTRY: CacheEntry = {
 
 describe('Test processor common behavior', () => {
 
-    const processors = [new SignatureProcessor(), new ExpirationProcessor(100)]
+    const processors = [new ExpirationProcessor(100)]
 
     beforeEach(() => {
         processors.forEach(processor => {
@@ -81,7 +81,9 @@ describe('Test processor common behavior', () => {
 })
 
 describe('Test SignatureProcessor', () => {
-    const processor = new SignatureProcessor()
+    const processor = new SignatureProcessor((data: string) => {
+        return createHash('sha256').update(data).digest('hex')
+    })
 
     beforeEach(() => {
         processor['nextProcessor'] = {
@@ -237,14 +239,18 @@ describe('Test StoreProcessor', () => {
 
 describe('Test createProcessors', () => {
     test('creation w/o signature', () => {
-        const processor = createProcessors(false, 100, new LocalStorageCacheStore())
+        const processor = createProcessors(null, 100, new LocalStorageCacheStore())
         expect(processor instanceof ExpirationProcessor).toBeTruthy()
         expect(processor['nextProcessor'] instanceof StoreProcessor).toBeTruthy()
         expect(processor['nextProcessor']['nextProcessor']).toBeNull()
     })
 
     test('creation with signature', () => {
-        const processor = createProcessors(true, 100, new LocalStorageCacheStore())
+        const processor = createProcessors(
+            (data) => createHash('sha256').update(data).digest('hex'),
+            100,
+            new LocalStorageCacheStore()
+        )
         expect(processor instanceof SignatureProcessor).toBeTruthy()
         expect(processor['nextProcessor'] instanceof ExpirationProcessor).toBeTruthy()
         expect(processor['nextProcessor']['nextProcessor'] instanceof StoreProcessor).toBeTruthy()

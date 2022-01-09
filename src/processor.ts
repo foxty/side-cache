@@ -1,7 +1,7 @@
 import { DateTime } from "luxon"
-import { createHash } from 'crypto';
 import { CacheStore } from "./store";
 
+export type Signer = (data: string) => string
 interface CacheEntry {
     key: string,
     value: string,
@@ -15,7 +15,7 @@ abstract class BaseCachePocessor {
         const clonedEntry = {
             key: cacheEntry.key,
             value: cacheEntry.value,
-            metadata: Object.assign({ }, cacheEntry.metadata)
+            metadata: Object.assign({}, cacheEntry.metadata)
         }
         return clonedEntry
     }
@@ -48,13 +48,18 @@ abstract class BaseCachePocessor {
 class SignatureProcessor extends BaseCachePocessor {
 
     static readonly SIGNATURE_KEY = 'signature'
+    private _signer: Signer
+    constructor(signer: Signer) {
+        super()
+        this._signer = signer
+    }
 
     private createSignature(content: string): string {
-        return createHash('sha256').update(content).digest('hex')
+        return this._signer(content)//createHash('sha256').update(content).digest('hex')
     }
 
     private verifySignature(content: string, signature: string): boolean {
-        return createHash('sha256').update(content).digest('hex') === signature
+        return this._signer(content) === signature
     }
 
     preSet(entry: CacheEntry): CacheEntry {
@@ -120,11 +125,11 @@ class StoreProcessor extends BaseCachePocessor {
     }
 }
 
-const createProcessors = (enableSignature: boolean, lifetime: number, cacheStore: CacheStore): BaseCachePocessor => {
+const createProcessors = (signer: Signer, lifetime: number, cacheStore: CacheStore): BaseCachePocessor => {
     const expire = new ExpirationProcessor(lifetime)
     const final = new StoreProcessor(cacheStore)
     expire.next(final)
-    return enableSignature ? new SignatureProcessor().next(expire) : expire
+    return signer ? new SignatureProcessor(signer).next(expire) : expire
 }
 
 export { CacheEntry, BaseCachePocessor, SignatureProcessor, ExpirationProcessor, StoreProcessor, createProcessors }

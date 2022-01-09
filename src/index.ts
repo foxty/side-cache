@@ -1,13 +1,13 @@
-import { CacheEntry, createProcessors, SignatureProcessor } from "./processor"
+import { CacheEntry, createProcessors, Signer } from "./processor"
 import { DefaultSerializer, Serializer } from "./serializer"
 import { CacheStore, LocalStorageCacheStore, LocalMemCacheStore } from "./store"
 
 const IS_IN_BROWSER = typeof window === 'object'
-
 interface CacheOptions {
     keyPrefix?: string | Function,
     enableSignature?: boolean,
     timeToLive?: number,
+    signer?: Signer
     //allowStaledValue?: boolean,
 }
 
@@ -18,7 +18,7 @@ interface GlobalCacheOptions extends CacheOptions {
 
 const DEFAULT_GLOBAL_OPTS: GlobalCacheOptions = {
     keyPrefix: 'cacheable',
-    enableSignature: false,
+    signer: null,
     timeToLive: -1,
     cacheStore: IS_IN_BROWSER ? new LocalStorageCacheStore() : new LocalMemCacheStore(),
     serializer: new DefaultSerializer(),
@@ -44,8 +44,8 @@ const cacheable = <T>(
     }
 
     const getCache = (cacheKey: string): any => {
-        const { timeToLive, enableSignature, cacheStore, serializer } = getCacheOptions()
-        const processors = createProcessors(enableSignature, timeToLive, cacheStore)
+        const { timeToLive, signer, cacheStore, serializer } = getCacheOptions()
+        const processors = createProcessors(signer, timeToLive, cacheStore)
         try {
             const cacheEntry: CacheEntry = processors.get(cacheKey)
             return cacheEntry ? serializer.deserialize(cacheEntry.value) : null
@@ -57,8 +57,8 @@ const cacheable = <T>(
     }
 
     const saveCache = (cacheKey: string, value: any) => {
-        const { timeToLive, enableSignature, cacheStore, serializer } = getCacheOptions()
-        const processors = createProcessors(enableSignature, timeToLive, cacheStore)
+        const { timeToLive, signer, cacheStore, serializer } = getCacheOptions()
+        const processors = createProcessors(signer, timeToLive, cacheStore)
         const serializedCacheValue = serializer.serialize(value)
         const cacheEntry: CacheEntry = {
             key: cacheKey,

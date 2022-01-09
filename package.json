@@ -1,6 +1,6 @@
 {
   "name": "side-cache",
-  "version": "0.0.5-beta",
+  "version": "0.0.5-rc1",
   "description": "Cache wrapper for Javascript fucntions! Support both Browser & Node.",
   "main": "dist/index.js",
   "type": "module",

@@ -1,4 +1,3 @@
-import { DateTime } from "luxon"
 import { CacheStore } from "./store";
 
 export type Signer = (data: string) => string
@@ -86,15 +85,17 @@ class ExpirationProcessor extends BaseCachePocessor {
     }
 
     preSet(cacheEntry: CacheEntry): CacheEntry {
-        cacheEntry.metadata[ExpirationProcessor.EXPIRE_AT] = this.lifetime >= 0 ? DateTime.now().plus({ second: this.lifetime }).toSeconds() : -1
-        cacheEntry.metadata[ExpirationProcessor.CREATE_AT] = DateTime.now().toSeconds()
+        const epochSeconds = Math.floor(new Date().getTime() / 1000)
+        cacheEntry.metadata[ExpirationProcessor.EXPIRE_AT] = this.lifetime >= 0 ? epochSeconds + this.lifetime : -1
+        cacheEntry.metadata[ExpirationProcessor.CREATE_AT] = epochSeconds
         return cacheEntry
     }
 
     postGet(key: string, cacheEntry: CacheEntry): CacheEntry {
+        const epochSeconds = Math.floor(new Date().getTime() / 1000)
         const expireAt = cacheEntry.metadata[ExpirationProcessor.EXPIRE_AT] || -1
         const createAt = cacheEntry.metadata[ExpirationProcessor.CREATE_AT] || -1
-        if (expireAt > 0 && expireAt < DateTime.now().toSeconds())
+        if (expireAt > 0 && expireAt < epochSeconds)
             throw new Error(`Cache ${key} expired: expireAt=${expireAt}, createAt=${createAt}`);
         return cacheEntry
     }

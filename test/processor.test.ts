@@ -1,5 +1,4 @@
 import { createHash } from 'crypto';
-import { DateTime } from 'luxon';
 import { CacheEntry, createProcessors, ExpirationProcessor, SignatureProcessor, StoreProcessor } from "../src/processor"
 import { LocalMemCacheStore, LocalStorageCacheStore } from '../src/store';
 
@@ -169,12 +168,13 @@ describe('Test ExpirationProcessor', () => {
     })
 
     test('Get success', () => {
+        const epochSeconds = Math.floor(new Date().getTime() / 1000)
         const [processor, nextSet, nextGet] = createProcessor(100)
         nextGet.mockReturnValue({
             ...CACHE_ENTRY,
             metadata: {
-                [ExpirationProcessor.EXPIRE_AT]: DateTime.now().toSeconds() + 100,
-                [ExpirationProcessor.CREATE_AT]: DateTime.now().toSeconds()
+                [ExpirationProcessor.EXPIRE_AT]: epochSeconds + 100,
+                [ExpirationProcessor.CREATE_AT]: epochSeconds
             }
         })
         const cachedEntry = processor.get('test')
@@ -185,12 +185,13 @@ describe('Test ExpirationProcessor', () => {
     })
 
     test('Get with negative expire time success', () => {
+        const epochSeconds = Math.floor(new Date().getTime() / 1000)
         const [processor, nextSet, nextGet] = createProcessor(100)
         nextGet.mockReturnValue({
             ...CACHE_ENTRY,
             metadata: {
                 [ExpirationProcessor.EXPIRE_AT]: -1,
-                [ExpirationProcessor.CREATE_AT]: DateTime.now().toSeconds()
+                [ExpirationProcessor.CREATE_AT]: epochSeconds
             }
         })
         const cachedEntry = processor.get('test')
@@ -201,12 +202,13 @@ describe('Test ExpirationProcessor', () => {
     })
 
     test('Get expired cache entry', () => {
+        const epochSeconds = Math.floor(new Date().getTime() / 1000)
         const [processor, nextSet, nextGet] = createProcessor(100)
         nextGet.mockReturnValue({
             ...CACHE_ENTRY,
             metadata: {
-                [ExpirationProcessor.EXPIRE_AT]: DateTime.now().toSeconds() - 10,
-                [ExpirationProcessor.CREATE_AT]: DateTime.now().toSeconds()
+                [ExpirationProcessor.EXPIRE_AT]: epochSeconds - 10,
+                [ExpirationProcessor.CREATE_AT]: epochSeconds
             }
         })
         expect(() => processor.get('test')).toThrowError(`Cache ${CACHE_ENTRY.key} expired`)

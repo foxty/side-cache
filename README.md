@@ -1,100 +1,166 @@
-# cacheable
-A simple cache wrapper for functions. Only need 1 line of code to cache the function result.
+# side-cache
 
-**Highglights**
-- Simple wrapper for function (support async)
-- Cache TTL
-- Cache signature validation (Optional)
-- Less pollution in your code
-- Support Array/Set/Map in returned type
-- Support LocalStorage or Memory as cache store
+> A lightweight, one-line caching wrapper for JavaScript/TypeScript functions. Works in both Browser and Node.js.
 
+[![npm version](https://img.shields.io/npm/v/side-cache)](https://www.npmjs.com/package/side-cache)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+
+## Highlights
+
+- **One-line caching** — wrap any sync/async function with zero boilerplate
+- **TTL support** — per-call or global expiration in seconds
+- **Signature validation** — optional integrity checks for cached data
+- **Auto-detects runtime** — `localStorage` in browsers, in-memory `Map` in Node.js
+- **Map/Set/Array support** — built-in serializer handles complex types
+- **Pluggable store & serializer** — swap in your own backends
+- **Zero dependencies** — tiny footprint
 
 ## Install
+
 ```bash
-npm i side-cache
+npm install side-cache
+```
+
+## Quick Start
+
+```javascript
+import { cacheable } from 'side-cache';
+
+const getUser = async (userId) => {
+  const resp = await fetch(`https://api.example.com/users/${userId}`);
+  return resp.json();
+};
+
+// One line — that's it.
+const getCachedUser = cacheable(getUser, (userId) => `user.${userId}`);
+
+const user = await getCachedUser(1); // fetches
+const cached = await getCachedUser(1); // from cache
 ```
 
 ## Usage
 
-**One Line for Cache**
+### With TTL
+
 ```javascript
-import { cacheable } from 'side-cache';
-
-const getUser = async (userId) => {
-    const resp = await fetch('https://gorest.co.in/public/v1/users?id=' + userId);
-    return await resp.json()
-}
-const getCacheableUser = cacheable(getUser, (userId)=> `user.${userId}`)
-
-const userInfo = getCacheableUser(1)
-console.log(userInfo)
+const getCachedUser = cacheable(getUser, (userId) => `user.${userId}`, {
+  timeToLive: 3600, // expire after 1 hour
+});
 ```
 
+### Global Configuration
 
-**Cache Options**
-```javascript
-import { cacheable } from 'side-cache';
-
-const getUser = async (userId) => {
-    const resp = await fetch('https://gorest.co.in/public/v1/users?id=' + userId);
-    return await resp.json()
-}
-//Cache will expired after 1 hour
-const getCacheableUser = cacheable(
-        getUser, 
-        (userId) => `user.${userId}`, 
-        {timeToLive: 3600}
-    )
-
-const userInfo = getCacheableUser(1)
-console.log(userInfo)
-```
-
-**Global Config**
 ```javascript
 import { configure } from 'side-cache';
+import { createHash } from 'crypto';
 
 configure({
-    keyPrefix: "cacheable",
-    signer: (data:string) => createHash('sha256').update(data).digest('hex'), //Default is null
-    timeToLive: 3600 * 24 // Default ttl is 1 day (seconds)
-    //cacheStore: new LocalStorageCacheStore() - Defautl store in browser.
-    //cacheStore: new LocalMemCacheStore() - Default store in Node.
-})
+  keyPrefix: 'myapp',
+  timeToLive: 86400, // 24 hours
+  signer: (data) => createHash('sha256').update(data).digest('hex'),
+});
+```
 
+### Custom Cache Store (Node.js)
+
+```javascript
+import { configure, LocalMemCacheStore } from 'side-cache';
+
+configure({
+  cacheStore: new LocalMemCacheStore(),
+});
+```
+
+### Custom Cache Store (Browser)
+
+```javascript
+import { configure, LocalStorageCacheStore } from 'side-cache';
+
+configure({
+  cacheStore: new LocalStorageCacheStore(),
+});
+```
+
+### Signature Validation
+
+```javascript
+const getCachedUser = cacheable(getUser, (userId) => `user.${userId}`, {
+  enableSignature: true,
+  signer: (data) => myHashFn(data),
+});
 ```
 
 ## API
-**cacheable**
-```javascript
-declare const cacheable: (
-    target: Function,                       // support sync/async function
-    cacheKeyBuilder: string | Function,     // only support sync function
-    options?: CacheOptions
-) => any;
 
-interface CacheOptions {
-    keyPrefix?: string | Function;          // Support sync/async function
-    signer?: (data:string) => string;       // Function use to do signature validation
-    timeToLive?: number;
+### `cacheable(target, cacheKeyBuilder, options?)`
+
+Wraps a function with caching logic using a `Proxy`.
+
+| Param            | Type                        | Description                                |
+| ---------------- | --------------------------- | ------------------------------------------ |
+| `target`         | `Function`                  | Sync or async function to cache            |
+| `cacheKeyBuilder`| `string \| (...args) => string` | Cache key (static string or dynamic builder) |
+| `options`        | `CacheOptions`              | *(optional)* Per-call overrides            |
+
+#### `CacheOptions`
+
+| Option            | Type                        | Default    | Description                               |
+| ----------------- | --------------------------- | ---------- | ----------------------------------------- |
+| `keyPrefix`       | `string \| Function`        | `'cacheable'` | Prefix for all cache keys             |
+| `timeToLive`      | `number`                    | `-1` (no expiry) | TTL in seconds                     |
+| `signer`          | `(data: string) => string`  | `null`     | Function to sign cached data               |
+| `enableSignature` | `boolean`                   | `false`    | Enable cache signature validation          |
+
+### `configure(options?)`
+
+Sets global defaults for all `cacheable()` calls.
+
+| Option       | Type              | Default                                  | Description              |
+| ------------ | ----------------- | ---------------------------------------- | ------------------------ |
+| `cacheStore` | `CacheStore`      | `LocalStorageCacheStore` (browser) / `LocalMemCacheStore` (Node) | Storage backend |
+| `serializer` | `Serializer<any>` | `DefaultSerializer`                      | Custom serializer        |
+
+*(All `CacheOptions` fields are also accepted.)*
+
+### `CacheStore` Interface
+
+```typescript
+interface CacheStore {
+  setItem(key: string, value: string): void;
+  getItem(key: string): string;
+  removeItem(key: string): void;
 }
 ```
-**configure**
-```javascript
-declare const configure: (options?: GlobalCacheOptions) => void;
 
-interface GlobalCacheOptions extends CacheOptions {
-    cacheStore?: CacheStore;
-    serializer?: Serializer<any>;
+Built-in stores: `LocalStorageCacheStore`, `LocalMemCacheStore`.
+
+### `Serializer` Interface
+
+```typescript
+interface Serializer<T> {
+  serialize(obj: T): string;
+  deserialize(value: string): T;
 }
 ```
 
-## Q&A
-- What kind of storage policy support?
-  > Currently we only support LocalStorage(in broswer) and LocalMemory(in node), it been selected automatically while launch your application.
+## How It Works
 
-- Does Browser application supported? 
-  > Yes.
+`side-cache` uses a JavaScript `Proxy` to intercept function calls. On the first invocation with a given key, it executes the original function and stores the result. Subsequent calls skip execution and return the cached value directly. A chain of processors handles **expiration** and optional **signature validation** before delegating to the configured `CacheStore`.
 
-- Please raise you questions in [issues](https://github.com/foxty/side-cache/issues)!
+## FAQ
+
+**Does it work in browsers?**  
+Yes — it automatically selects `localStorage` in browser environments.
+
+**Does it work with async functions?**  
+Yes — Promises are transparently cached after resolution.
+
+**Can I use a custom storage backend?**  
+Yes — implement the `CacheStore` interface and pass it via `configure()`.
+
+**What types are supported in return values?**  
+Plain objects, arrays, `Map`, and `Set` are all handled by the default serializer.
+
+## License
+
+[Apache-2.0](LICENSE)
